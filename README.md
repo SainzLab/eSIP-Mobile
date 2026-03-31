@@ -1,3 +1,5 @@
+![Capstone Project Glitch](./glitch.svg)
+
 # mobile_earsip
 
 A new Flutter project.
