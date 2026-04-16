@@ -1,91 +1,24 @@
 import 'package:flutter/material.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  int _selectedIndex = 0;
-
-  final Color bgColor = const Color(0xFFF8F9FE);
-  final Color primaryBlue = const Color(0xFF2563EB);
-  final Color textDark = const Color(0xFF1E293B);
-  final Color textGrey = const Color(0xFF64748B);
-
-  @override
   Widget build(BuildContext context) {
+    final Color bgColor = const Color(0xFFF8F9FE);
+    final Color primaryBlue = const Color(0xFF2563EB);
+    final Color textDark = const Color(0xFF1E293B);
+    final Color textGrey = const Color(0xFF64748B);
+
     return Scaffold(
       backgroundColor: bgColor,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: primaryBlue,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          child: BottomNavigationBar(
-            currentIndex: _selectedIndex,
-            onTap: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            selectedItemColor: primaryBlue,
-            unselectedItemColor: Colors.grey.shade400,
-            selectedFontSize: 10,
-            unselectedFontSize: 10,
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
-              BottomNavigationBarItem(icon: Icon(Icons.folder_outlined), label: 'Arsip'),
-              BottomNavigationBarItem(icon: Icon(Icons.category_outlined), label: 'Kategori'),
-              BottomNavigationBarItem(icon: Icon(Icons.move_to_inbox_outlined), label: 'Disposisi'),
-              BottomNavigationBarItem(icon: Icon(Icons.delete_outline), label: 'Sampah'),
-            ],
-          ),
-        ),
-      ),
+      
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'eSIP',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: primaryBlue,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.blue.shade100,
-                    child: Icon(Icons.person, color: primaryBlue), 
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -101,6 +34,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
               const SizedBox(height: 24),
+              
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -138,7 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       child: Center(
                         child: Text(
-                          '[ Area Fl_Chart Stacked Bar ]\nSiap diintegrasikan',
+                          '[ Area Fl_Chart Stacked Bar ]\n',
                           textAlign: TextAlign.center,
                           style: TextStyle(color: primaryBlue.withValues(alpha: 0.7), fontSize: 12),
                         ),
@@ -156,6 +90,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -185,7 +120,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 iconColor: const Color(0xFFD97706),
                 bgColor: const Color(0xFFFFFBEB),
               ),
-              const SizedBox(height: 60),
+              const SizedBox(height: 80), 
             ],
           ),
         ),

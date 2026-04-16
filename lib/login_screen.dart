@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -78,6 +79,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
                                       color: Colors.white.withValues(alpha: 0.3),
                                       width: 1,
@@ -243,7 +245,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     width: double.infinity,
                                     height: 54,
                                     child: ElevatedButton(
-                                      onPressed: () {},
+                                      onPressed: () {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(builder: (context) => const MainScreen()),
+                                        );
+                                      },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: primaryBlue,
                                         foregroundColor: Colors.white,
