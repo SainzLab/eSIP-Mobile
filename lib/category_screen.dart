@@ -81,7 +81,7 @@ class CategoryScreen extends StatelessWidget {
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 0.85,
+                childAspectRatio: 1,
                 children: [
                   _buildCategoryCard(
                     title: 'Surat Masuk',
