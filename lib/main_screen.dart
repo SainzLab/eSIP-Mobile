@@ -3,6 +3,7 @@ import 'dashboard_screen.dart';
 import 'archive_screen.dart'; 
 import 'category_screen.dart'; 
 import 'disposisi_screen.dart';
+import 'sampah_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -21,7 +22,7 @@ class _MainScreenState extends State<MainScreen> {
     const ArchiveScreen(),
     const CategoryScreen(),
     const DisposisiScreen(),
-    const Center(child: Text('Halaman Sampah (Segera Hadir)')),
+    const SampahScreen(),
   ];
 
   @override

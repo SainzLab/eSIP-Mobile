@@ -6,138 +6,107 @@ class DisposisiScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color bgColor = const Color(0xFFF8F9FE);
-    final Color primaryBlue = const Color(0xFF2563EB);
     final Color textDark = const Color(0xFF1E293B);
 
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.only(top: 20.0, left: 24.0, right: 24.0, bottom: 16.0),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
-                        ],
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Cari nomor surat atau instruksi...',
-                          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                          prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.post_add_rounded, size: 20),
-                        label: const Text(
-                          'Buat Disposisi',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryBlue,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Lembar Disposisi',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: textDark,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.indigo.shade50,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Terbaru',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.indigo.shade400,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _DisposisiHeaderDelegate(
+                  minHeight: 60.0,
+                  maxHeight: 130.0,
                 ),
               ),
-            ),
 
-            SliverPadding(
-              padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 100.0),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  _buildDisposisiCard(
-                    refNumber: 'NTD/11/Kemendikbud/2026',
-                    badgeText: 'RAHASIA',
-                    badgeColor: const Color(0xFFDC2626), 
-                    badgeBgColor: const Color(0xFFFEF2F2),
-                    instruction: 'Segera tindak lanjuti laporan tahunan keuangan sebelum audit eksternal.',
-                    department: 'HUMAS',
-                    status: 'Selesai',
-                    statusColor: Colors.green,
-                    iconData: Icons.description_outlined,
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 16.0, bottom: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Lembar Disposisi',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: textDark,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.indigo.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Terbaru',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.indigo.shade400,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  _buildDisposisiCard(
-                    refNumber: 'ND/02/ARSIP/XII/2025',
-                    badgeText: 'SEGERA',
-                    badgeColor: const Color(0xFF2563EB),
-                    badgeBgColor: const Color(0xFFEFF6FF),
-                    instruction: 'Mohon berikan tanggapan terkait draf kurikulum baru.',
-                    department: 'KURIKULUM',
-                    status: 'Proses',
-                    statusColor: Colors.amber.shade600,
-                    iconData: Icons.chat_bubble_outline_rounded,
-                  ),
-                  _buildDisposisiCard(
-                    refNumber: 'SURAT/KEP/IV/2026',
-                    badgeText: 'BIASA',
-                    badgeColor: const Color(0xFF64748B), 
-                    badgeBgColor: const Color(0xFFF1F5F9),
-                    instruction: 'Arsipkan dokumen sesuai dengan kategori tahun berjalan.',
-                    department: 'UMUM',
-                    status: 'Selesai',
-                    statusColor: Colors.green,
-                    iconData: Icons.video_camera_back_outlined, 
-                  ),
-                ]),
+                ),
               ),
-            ),
-          ],
+
+              SliverPadding(
+                padding: const EdgeInsets.only(bottom: 100.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildDisposisiCard(
+                      refNumber: 'NTD/11/Kemendikbud/2026',
+                      badgeText: 'RAHASIA',
+                      badgeColor: const Color(0xFFDC2626), 
+                      badgeBgColor: const Color(0xFFFEF2F2),
+                      instruction: 'Segera tindak lanjuti laporan tahunan keuangan sebelum audit eksternal.',
+                      department: 'HUMAS',
+                      status: 'Selesai',
+                      statusColor: Colors.green,
+                      iconData: Icons.description_outlined,
+                    ),
+                    _buildDisposisiCard(
+                      refNumber: 'ND/02/ARSIP/XII/2025',
+                      badgeText: 'SEGERA',
+                      badgeColor: const Color(0xFF2563EB),
+                      badgeBgColor: const Color(0xFFEFF6FF),
+                      instruction: 'Mohon berikan tanggapan terkait draf kurikulum baru.',
+                      department: 'KURIKULUM',
+                      status: 'Proses',
+                      statusColor: Colors.amber.shade600,
+                      iconData: Icons.chat_bubble_outline_rounded,
+                    ),
+                    _buildDisposisiCard(
+                      refNumber: 'SURAT/KEP/IV/2026',
+                      badgeText: 'BIASA',
+                      badgeColor: const Color(0xFF64748B), 
+                      badgeBgColor: const Color(0xFFF1F5F9),
+                      instruction: 'Arsipkan dokumen sesuai dengan kategori tahun berjalan.',
+                      department: 'UMUM',
+                      status: 'Selesai',
+                      statusColor: Colors.green,
+                      iconData: Icons.video_camera_back_outlined, 
+                    ),
+                  ]),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -330,5 +299,144 @@ class DisposisiScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _DisposisiHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double minHeight;
+  final double maxHeight;
+
+  _DisposisiHeaderDelegate({required this.minHeight, required this.maxHeight});
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    double progress = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
+    final Color primaryBlue = const Color(0xFF2563EB);
+
+    return Container(
+      color: const Color(0xFFF8F9FE), 
+      alignment: Alignment.center,
+      child: ClipRect(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Opacity(
+              opacity: 1.0 - progress,
+              child: IgnorePointer(
+                ignoring: progress > 0.5, 
+                child: OverflowBox(
+                  minHeight: maxHeight,
+                  maxHeight: maxHeight,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Cari nomor surat atau instruksi...',
+                            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                            prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton.icon(
+                          onPressed: () {},
+                          icon: const Icon(Icons.post_add_rounded, size: 20),
+                          label: const Text('Buat Disposisi', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryBlue,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            Opacity(
+              opacity: progress,
+              child: IgnorePointer(
+                ignoring: progress < 0.5, 
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 45,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 4, offset: const Offset(0, 2)),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Cari...',
+                            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                            prefixIcon: Icon(Icons.search, color: Colors.grey.shade400, size: 20),
+                            prefixIconConstraints: const BoxConstraints(minWidth: 30, minHeight: 20),
+                            border: InputBorder.none,
+                            isCollapsed: true, 
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    
+                    Container(
+                      height: 45,
+                      width: 45,
+                      decoration: BoxDecoration(
+                        color: primaryBlue,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(color: primaryBlue.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3)),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.post_add_rounded, color: Colors.white, size: 20),
+                        onPressed: () {}, 
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_DisposisiHeaderDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight || minHeight != oldDelegate.minHeight;
   }
 }
