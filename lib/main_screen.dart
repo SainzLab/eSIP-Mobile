@@ -24,7 +24,7 @@ class _MainScreenState extends State<MainScreen> {
   final Color textDark = const Color(0xFF1E293B);
 
   // ------------------------------------------------------------
-  final String currentRole = 'staff'; // kepsek atau staff
+  final String currentRole = 'kepsek'; // kepsek atau staff
   final String userName = 'arsiparis';
   final String userEmail = 'arsiparis@dev.com';
   final String userRoleDisplay = 'PETUGAS ARSIP';

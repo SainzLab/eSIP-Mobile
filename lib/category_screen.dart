@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'components/daftar_arsip_kategori_screen.dart'; 
 
 class CategoryScreen extends StatelessWidget {
   const CategoryScreen({super.key});
@@ -84,6 +85,7 @@ class CategoryScreen extends StatelessWidget {
                 childAspectRatio: 1,
                 children: [
                   _buildCategoryCard(
+                    context,
                     title: 'Surat Masuk',
                     count: '1.2k',
                     icon: Icons.mail_outline,
@@ -91,6 +93,7 @@ class CategoryScreen extends StatelessWidget {
                     iconBgColor: const Color(0xFFEFF6FF),
                   ),
                   _buildCategoryCard(
+                    context,
                     title: 'Surat Keluar',
                     count: '842',
                     icon: Icons.send_outlined,
@@ -98,6 +101,7 @@ class CategoryScreen extends StatelessWidget {
                     iconBgColor: const Color(0xFFEFF6FF),
                   ),
                   _buildCategoryCard(
+                    context,
                     title: 'Surat Keputusan',
                     count: '156',
                     icon: Icons.gavel_outlined,
@@ -105,6 +109,7 @@ class CategoryScreen extends StatelessWidget {
                     iconBgColor: const Color(0xFFFAF5FF),
                   ),
                   _buildCategoryCard(
+                    context,
                     title: 'Surat Perintah',
                     count: '310',
                     icon: Icons.assignment_late_outlined,
@@ -112,6 +117,7 @@ class CategoryScreen extends StatelessWidget {
                     iconBgColor: const Color(0xFFFEF2F2),
                   ),
                   _buildCategoryCard(
+                    context,
                     title: 'Nota Dinas',
                     count: '529',
                     icon: Icons.description_outlined,
@@ -119,6 +125,7 @@ class CategoryScreen extends StatelessWidget {
                     iconBgColor: const Color(0xFFFAF5FF),
                   ),
                   _buildCategoryCard(
+                    context,
                     title: 'Surat Edaran',
                     count: '67',
                     icon: Icons.campaign_outlined,
@@ -126,6 +133,7 @@ class CategoryScreen extends StatelessWidget {
                     iconBgColor: const Color(0xFFF1F5F9),
                   ),
                   _buildCategoryCard(
+                    context,
                     title: 'Berita Acara',
                     count: '215',
                     icon: Icons.article_outlined,
@@ -133,6 +141,7 @@ class CategoryScreen extends StatelessWidget {
                     iconBgColor: const Color(0xFFF1F5F9),
                   ),
                   _buildCategoryCard(
+                    context,
                     title: 'Dokumen Keuangan',
                     count: '1.8k',
                     icon: Icons.account_balance_wallet_outlined,
@@ -148,7 +157,8 @@ class CategoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryCard({
+  Widget _buildCategoryCard(
+    BuildContext context, {
     required String title,
     required String count,
     required IconData icon,
@@ -213,19 +223,44 @@ class CategoryScreen extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 8),
-          Row(
-            children: [
-              const Text(
-                'LIHAT ARSIP',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2563EB),
+          
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(4),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DaftarArsipKategoriScreen(
+                      categoryName: title,
+                    ),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'LIHAT ARSIP',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2563EB),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_forward_ios, 
+                      size: 8, 
+                      color: const Color(0xFF2563EB).withValues(alpha: 0.8)
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 4),
-              Icon(Icons.arrow_forward_ios, size: 8, color: const Color(0xFF2563EB).withValues(alpha: 0.8)),
-            ],
+            ),
           ),
         ],
       ),
