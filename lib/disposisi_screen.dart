@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'components/buat_disposisi_screen.dart';
 
 class DisposisiScreen extends StatelessWidget {
   const DisposisiScreen({super.key});
@@ -359,7 +360,12 @@ class _DisposisiHeaderDelegate extends SliverPersistentHeaderDelegate {
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const BuatDisposisiScreen()),
+                            );
+                          },
                           icon: const Icon(Icons.post_add_rounded, size: 20),
                           label: const Text('Buat Disposisi', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                           style: ElevatedButton.styleFrom(
