@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.05),
+                                  color: Colors.white.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: Colors.white.withValues(alpha: 0.15),
@@ -89,8 +89,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   children: [
                                     Image.asset(
                                       'assets/logo.png', 
-                                      width: 68, 
-                                      height: 68,
+                                      width: 70, 
+                                      height: 70,
                                       fit: BoxFit.contain,
                                       errorBuilder: (context, error, stackTrace) {
                                         return const Icon(Icons.school, color: Colors.white, size: 50);
@@ -104,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                         const Text(
                                           'eSIP',
                                           style: TextStyle(
-                                            fontSize: 27,
+                                            fontSize: 26,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
                                             letterSpacing: 0.5,
@@ -114,8 +114,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                         Text(
                                           'Sistem Informasi Pengarsipan',
                                           style: TextStyle(
-                                            fontSize: 15,
-                                            color: Colors.white.withValues(alpha: 0.8),
+                                            fontSize: 12,
+                                            color: Colors.white.withValues(alpha: 0.9),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'SMPN 1 PABUARAN',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.white.withValues(alpha: 0.9),
                                           ),
                                         ),
                                       ],
