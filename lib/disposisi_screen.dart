@@ -428,7 +428,12 @@ class _DisposisiHeaderDelegate extends SliverPersistentHeaderDelegate {
                       ),
                       child: IconButton(
                         icon: const Icon(Icons.post_add_rounded, color: Colors.white, size: 20),
-                        onPressed: () {}, 
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const BuatDisposisiScreen()),
+                            );
+                        }, 
                       ),
                     ),
                   ],

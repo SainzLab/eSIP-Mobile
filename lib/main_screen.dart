@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'scanner_screen.dart';
+import 'components/scanner_screen.dart';
 import 'dashboard_screen.dart';
 import 'archive_screen.dart'; 
 import 'category_screen.dart'; 

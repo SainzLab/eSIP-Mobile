@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'components/unggah_arsip_screen.dart';
 
 class ArchiveScreen extends StatelessWidget {
   const ArchiveScreen({super.key});
@@ -222,6 +223,13 @@ class _ArchiveHeaderDelegate extends SliverPersistentHeaderDelegate {
     double progress = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
     final Color primaryBlue = const Color(0xFF2563EB);
 
+    void goToUploadForm() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const UnggahArsipScreen()),
+      );
+    }
+
     return Container(
       color: const Color(0xFFF8F9FE), 
       alignment: Alignment.center,
@@ -262,7 +270,7 @@ class _ArchiveHeaderDelegate extends SliverPersistentHeaderDelegate {
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: goToUploadForm, 
                           icon: const Icon(Icons.cloud_upload_outlined, size: 20),
                           label: const Text('Unggah Arsip', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                           style: ElevatedButton.styleFrom(
@@ -346,7 +354,7 @@ class _ArchiveHeaderDelegate extends SliverPersistentHeaderDelegate {
                           color: Colors.white,
                           size: 20,
                         ),
-                        onPressed: () {},
+                        onPressed: goToUploadForm,
                       ),
                     ),
                   ],
