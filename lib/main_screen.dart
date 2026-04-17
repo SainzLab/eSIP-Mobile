@@ -4,6 +4,7 @@ import 'archive_screen.dart';
 import 'category_screen.dart'; 
 import 'disposisi_screen.dart';
 import 'sampah_screen.dart';
+import 'statistik_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -17,25 +18,31 @@ class _MainScreenState extends State<MainScreen> {
   final Color primaryBlue = const Color(0xFF2563EB);
   final Color bgColor = const Color(0xFFF8F9FE);
 
-  final List<Widget> _pages = [
-    const DashboardScreen(),
-    const ArchiveScreen(),
-    const CategoryScreen(),
-    const DisposisiScreen(),
-    const SampahScreen(),
-  ];
+  // ------------------------------
+  final String currentRole = 'kepsek'; 
+  // ------------------------------
+
+  List<Widget> _getPages() {
+    return [
+      const DashboardScreen(),
+      const ArchiveScreen(),
+      const CategoryScreen(),
+      const DisposisiScreen(),
+      currentRole == 'kepsek' ? const StatistikScreen() : const SampahScreen(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
+    final pages = _getPages(); 
+
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: bgColor,
         elevation: 0,
-       
         scrolledUnderElevation: 0, 
         surfaceTintColor: Colors.transparent, 
-        
         titleSpacing: 24.0,
         title: Text(
           'eSIP',
@@ -58,14 +65,16 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
 
-      body: _pages[_selectedIndex], 
+      body: pages[_selectedIndex], 
 
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: primaryBlue,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
-      ),
+      floatingActionButton: currentRole == 'kepsek' 
+          ? null 
+          : FloatingActionButton(
+              onPressed: () {},
+              backgroundColor: primaryBlue,
+              shape: const CircleBorder(),
+              child: const Icon(Icons.add, color: Colors.white, size: 28),
+            ),
       
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -92,12 +101,16 @@ class _MainScreenState extends State<MainScreen> {
             unselectedItemColor: Colors.grey.shade400,
             selectedFontSize: 10,
             unselectedFontSize: 10,
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
-              BottomNavigationBarItem(icon: Icon(Icons.folder_outlined), activeIcon: Icon(Icons.folder_rounded), label: 'Arsip'),
-              BottomNavigationBarItem(icon: Icon(Icons.category_outlined), activeIcon: Icon(Icons.category_rounded), label: 'Kategori'),
-              BottomNavigationBarItem(icon: Icon(Icons.move_to_inbox_outlined), activeIcon: Icon(Icons.move_to_inbox_rounded), label: 'Disposisi'),
-              BottomNavigationBarItem(icon: Icon(Icons.delete_outline), activeIcon: Icon(Icons.delete_rounded), label: 'Sampah'),
+            items: [
+              const BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
+              const BottomNavigationBarItem(icon: Icon(Icons.folder_outlined), activeIcon: Icon(Icons.folder_rounded), label: 'Arsip'),
+              const BottomNavigationBarItem(icon: Icon(Icons.category_outlined), activeIcon: Icon(Icons.category_rounded), label: 'Kategori'),
+              const BottomNavigationBarItem(icon: Icon(Icons.move_to_inbox_outlined), activeIcon: Icon(Icons.move_to_inbox_rounded), label: 'Disposisi'),
+              
+              if (currentRole == 'kepsek')
+                const BottomNavigationBarItem(icon: Icon(Icons.auto_graph_outlined), activeIcon: Icon(Icons.auto_graph_rounded), label: 'Stats')
+              else
+                const BottomNavigationBarItem(icon: Icon(Icons.delete_outline), activeIcon: Icon(Icons.delete_rounded), label: 'Sampah'),
             ],
           ),
         ),
