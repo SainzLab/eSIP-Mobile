@@ -72,46 +72,57 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         child: FadeTransition(
                           opacity: _fadeAnimation,
                           child: Padding(
-                            padding: const EdgeInsets.only(top: 50.0, bottom: 40.0),
-                            child: Column(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
+                            padding: const EdgeInsets.only(top: 60.0, bottom: 40.0, left: 24.0, right: 24.0),
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
                                     color: Colors.white.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: Colors.white.withValues(alpha: 0.3),
-                                      width: 1,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Image.asset(
+                                      'assets/logo.png', 
+                                      width: 68, 
+                                      height: 68,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return const Icon(Icons.school, color: Colors.white, size: 50);
+                                      },
                                     ),
-                                  ),
-                                  child: const Icon(
-                                    Icons.archive_outlined,
-                                    color: Colors.white,
-                                    size: 36,
-                                  ),
+                                    const SizedBox(width: 16),
+                                    
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'eSIP',
+                                          style: TextStyle(
+                                            fontSize: 27,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Sistem Informasi Pengarsipan',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.white.withValues(alpha: 0.8),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'eSIP',
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    letterSpacing: 1.0,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  'Sistem Informasi Pengarsipan\nSMPN 1 Pabuaran',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
