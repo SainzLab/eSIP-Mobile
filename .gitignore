@@ -45,3 +45,4 @@ app.*.map.json
 /android/app/release
 
 /bckp.md
+lib/login_screen.dart

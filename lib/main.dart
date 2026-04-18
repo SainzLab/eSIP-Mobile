@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'login_screen.dart'; 
 
 void main() {
@@ -10,14 +11,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'eSIP Mobile',
-      debugShowCheckedModeBanner: false, 
+    return GetMaterialApp(
+      title: 'eSIP',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2563EB)),
+        primaryColor: const Color(0xFF2563EB),
         useMaterial3: true,
       ),
-      home: LoginScreen(), 
+      home: const LoginScreen(),
     );
   }
 }

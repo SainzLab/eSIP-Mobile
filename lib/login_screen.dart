@@ -1,5 +1,80 @@
+import 'package:flutter/foundation.dart';
+// --------------------------------------------------
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'main_screen.dart';
+import 'models/pocketbase_service.dart';
+
+class LoginController extends GetxController {
+  var isPasswordVisible = false.obs;
+  var isLoading = false.obs;
+
+  late TextEditingController emailController;
+  late TextEditingController passwordController;
+
+  @override
+  void onInit() {
+    super.onInit();
+    
+    if (kDebugMode) {
+      emailController = TextEditingController(text: 'staff@dev.com');
+      passwordController = TextEditingController(text: 'admin123');
+    } else {
+      emailController = TextEditingController();
+      passwordController = TextEditingController();
+    }
+  }
+  
+  void togglePasswordVisibility() {
+    isPasswordVisible.value = !isPasswordVisible.value;
+  }
+
+  Future<void> login() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      Get.snackbar(
+        'Perhatian', 
+        'Email dan password tidak boleh kosong!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade600,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      await PocketBaseService.pb
+          .collection('users')
+          .authWithPassword(email, password);
+
+      Get.offAll(() => const MainScreen());
+
+    } catch (e) {
+      Get.snackbar(
+        'Gagal Masuk', 
+        'Email atau password salah. Silakan coba lagi.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade800,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  @override
+  void onClose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.onClose();
+  }
+}
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,7 +84,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
-  bool _isPasswordVisible = false;
+  final LoginController controller = Get.put(LoginController());
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -187,6 +262,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   ),
                                   const SizedBox(height: 8),
                                   TextField(
+                                    controller: controller.emailController,
                                     decoration: InputDecoration(
                                       hintText: 'nama@email.com',
                                       hintStyle: const TextStyle(color: Colors.grey),
@@ -212,22 +288,19 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-                                  TextField(
-                                    obscureText: !_isPasswordVisible,
+                                  Obx(() => TextField(
+                                    controller: controller.passwordController,
+                                    obscureText: !controller.isPasswordVisible.value,
                                     decoration: InputDecoration(
                                       hintText: '••••••••',
                                       hintStyle: const TextStyle(color: Colors.grey),
                                       prefixIcon: const Icon(Icons.lock_outline, color: textGrey),
                                       suffixIcon: IconButton(
                                         icon: Icon(
-                                          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                                          controller.isPasswordVisible.value ? Icons.visibility : Icons.visibility_off,
                                           color: textGrey,
                                         ),
-                                        onPressed: () {
-                                          setState(() {
-                                            _isPasswordVisible = !_isPasswordVisible;
-                                          });
-                                        },
+                                        onPressed: controller.togglePasswordVisibility,
                                       ),
                                       filled: true,
                                       fillColor: inputBackground,
@@ -237,7 +310,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                       ),
                                       contentPadding: const EdgeInsets.symmetric(vertical: 16),
                                     ),
-                                  ),
+                                  )),
                                   const SizedBox(height: 12),
 
                                   Align(
@@ -263,13 +336,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   SizedBox(
                                     width: double.infinity,
                                     height: 54,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(builder: (context) => const MainScreen()),
-                                        );
-                                      },
+                                    child: Obx(() => ElevatedButton(
+                                      onPressed: controller.isLoading.value ? null : controller.login,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: primaryBlue,
                                         foregroundColor: Colors.white,
@@ -279,21 +347,23 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                           borderRadius: BorderRadius.circular(12),
                                         ),
                                       ),
-                                      child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            'Masuk ke Sistem',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
+                                      child: controller.isLoading.value
+                                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                          : const Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  'Masuk ke Sistem',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 8),
+                                                Icon(Icons.login, size: 20),
+                                              ],
                                             ),
-                                          ),
-                                          SizedBox(width: 8),
-                                          Icon(Icons.login, size: 20),
-                                        ],
-                                      ),
-                                    ),
+                                    )),
                                   ),
                                   
                                   const SizedBox(height: 24),
