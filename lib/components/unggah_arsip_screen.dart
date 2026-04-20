@@ -26,6 +26,9 @@ class UnggahArsipController extends GetxController {
 
   var kategoriList = <RecordModel>[].obs;
 
+  String userRole = '';
+  String userBidang = '';
+
   final List<String> bidangList = [
     "Tata Usaha", "Kesiswaan", "Kepegawaian", "Keuangan", 
     "Kurikulum", "Sarana dan Prasarana", "Humas", 
@@ -35,36 +38,64 @@ class UnggahArsipController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _fetchKategori();
+    
+    final record = PocketBaseService.pb.authStore.record;
+    userRole = record?.getStringValue('role') ?? '';
+    userBidang = record?.getStringValue('bidang') ?? '';
+
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    isLoading.value = true;
+    await _fetchKategori();
     
     if (existingDoc != null) {
-      _prefillData();
+      _prefillData(existingDoc!);
+    } else {
+      if (userRole == 'Staff' && userBidang.isNotEmpty) {
+        selectedBidang.value = userBidang;
+      }
+    }
+    isLoading.value = false;
+  }
+
+  Future<void> refreshData() async {
+    try {
+      await _fetchKategori();
+      
+      if (existingDoc != null) {
+        final freshDoc = await PocketBaseService.pb.collection('arsip').getOne(existingDoc!.id);
+        _prefillData(freshDoc);
+      }
+    } catch (e) {
+      debugPrint('Gagal refresh data: $e');
+      Get.snackbar('Gagal', 'Tidak dapat memperbarui data dari server.', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
-  void _prefillData() {
-    noSuratController.text = existingDoc!.getStringValue('no_surat');
-    judulController.text = existingDoc!.getStringValue('judul');
+  void _prefillData(RecordModel doc) {
+    noSuratController.text = doc.getStringValue('no_surat');
+    judulController.text = doc.getStringValue('judul');
     
-    final tglString = existingDoc!.getStringValue('tanggal_surat');
+    final tglString = doc.getStringValue('tanggal_surat');
     if (tglString.isNotEmpty) {
       selectedDate.value = DateTime.tryParse(tglString);
     }
     
-    selectedKategoriId.value = existingDoc!.getStringValue('kategori_id');
-    selectedBidang.value = existingDoc!.getStringValue('bidang');
-    fileName.value = existingDoc!.getStringValue('file_dokumen'); 
+    selectedKategoriId.value = doc.getStringValue('kategori_id');
+    selectedBidang.value = doc.getStringValue('bidang');
+    fileName.value = doc.getStringValue('file_dokumen'); 
+    
+    filePath.value = ''; 
   }
 
   Future<void> _fetchKategori() async {
-    isLoading.value = true;
     try {
       final res = await PocketBaseService.pb.collection('kategori').getFullList();
       kategoriList.value = res;
     } catch (e) {
       debugPrint('Gagal mengambil kategori: $e');
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -80,13 +111,7 @@ class UnggahArsipController extends GetxController {
         filePath.value = result.files.single.path ?? '';
       }
     } catch (e) {
-      Get.snackbar(
-        'Error', 
-        'Gagal memilih file.', 
-        snackPosition: SnackPosition.BOTTOM, 
-        backgroundColor: Colors.red, 
-        colorText: Colors.white
-      );
+      Get.snackbar('Error', 'Gagal memilih file.', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
@@ -128,25 +153,11 @@ class UnggahArsipController extends GetxController {
       if (existingDoc == null) {
         await pb.collection('arsip').create(body: body, files: files);
         Get.back(); 
-        Get.snackbar(
-          'Sukses', 
-          'Dokumen arsip berhasil diunggah.', 
-          snackPosition: SnackPosition.BOTTOM, 
-          backgroundColor: const Color(0xFF10B981),
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
+        Get.snackbar('Sukses', 'Dokumen arsip berhasil diunggah.', snackPosition: SnackPosition.BOTTOM, backgroundColor: const Color(0xFF10B981), colorText: Colors.white, margin: const EdgeInsets.all(16));
       } else {
         await pb.collection('arsip').update(existingDoc!.id, body: body, files: files.isNotEmpty ? files : []);
         Get.back(); 
-        Get.snackbar(
-          'Sukses', 
-          'Dokumen arsip berhasil diperbarui.', 
-          snackPosition: SnackPosition.BOTTOM, 
-          backgroundColor: const Color(0xFF10B981),
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
+        Get.snackbar('Sukses', 'Dokumen arsip berhasil diperbarui.', snackPosition: SnackPosition.BOTTOM, backgroundColor: const Color(0xFF10B981), colorText: Colors.white, margin: const EdgeInsets.all(16));
       }
 
       if (Get.isRegistered<ArchiveController>()) {
@@ -194,11 +205,7 @@ class UnggahArsipScreen extends StatelessWidget {
         builder: (context, child) {
           return Theme(
             data: Theme.of(context).copyWith(
-              colorScheme: ColorScheme.light(
-                primary: primaryBlue, 
-                onPrimary: Colors.white, 
-                onSurface: textDark,
-              ),
+              colorScheme: ColorScheme.light(primary: primaryBlue, onPrimary: Colors.white, onSurface: textDark),
             ),
             child: child!,
           );
@@ -217,130 +224,142 @@ class UnggahArsipScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 5)
-                              ]
-                            ),
-                            child: const Icon(Icons.arrow_back_ios_new, color: Colors.black87, size: 16),
-                          ),
-                        ),
-                      ),
-                      Text(
-                        existingDoc == null ? 'Unggah Arsip Baru' : 'Edit Arsip',
-                        style: TextStyle(color: textDark, fontSize: 18, fontWeight: FontWeight.w800),
-                      ),
-                    ],
-                  ),
-                ),
-
-                Container(
-                  margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                  padding: const EdgeInsets.all(24.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20, offset: const Offset(0, 10))
-                    ],
-                  ),
+          return RefreshIndicator(
+            onRefresh: controller.refreshData,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      
-                      _buildSectionTitle('Informasi Dokumen', Icons.info_outline, primaryBlue, textDark),
-                      const SizedBox(height: 20),
-
-                      _buildLabel('NOMOR SURAT', textGrey),
-                      _buildTextField(
-                        controller: controller.noSuratController,
-                        hint: 'Contoh: 001/SK/2026', 
-                        prefixIcon: Icons.tag_rounded,
-                        bgColor: bgColor, borderGrey: borderGrey, primaryBlue: primaryBlue,
-                      ),
-                      const SizedBox(height: 20),
-
-                      _buildLabel('TANGGAL SURAT', textGrey),
-                      InkWell(
-                        onTap: () => selectDate(context),
-                        borderRadius: BorderRadius.circular(14),
-                        child: IgnorePointer(
-                          child: _buildTextField(
-                            controller: TextEditingController(),
-                            hint: controller.selectedDate.value == null 
-                                ? 'Pilih Tanggal' 
-                                : '${controller.selectedDate.value!.day.toString().padLeft(2, '0')}/${controller.selectedDate.value!.month.toString().padLeft(2, '0')}/${controller.selectedDate.value!.year}',
-                            prefixIcon: Icons.calendar_month_rounded,
-                            suffixIcon: Icons.keyboard_arrow_down_rounded,
-                            hintColor: controller.selectedDate.value == null ? null : textDark,
-                            bgColor: bgColor, borderGrey: borderGrey, primaryBlue: primaryBlue,
-                          ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: GestureDetector(
+                                onTap: () => Navigator.pop(context),
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 5)]
+                                  ),
+                                  child: const Icon(Icons.arrow_back_ios_new, color: Colors.black87, size: 16),
+                                ),
+                              ),
+                            ),
+                            Text(
+                              existingDoc == null ? 'Unggah Arsip Baru' : 'Edit Arsip',
+                              style: TextStyle(color: textDark, fontSize: 18, fontWeight: FontWeight.w800),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 20),
 
-                      _buildLabel('JUDUL DOKUMEN', textGrey),
-                      _buildTextField(
-                        controller: controller.judulController,
-                        hint: 'Contoh: SK Pembagian Tugas',
-                        prefixIcon: Icons.description_outlined,
-                        bgColor: bgColor, borderGrey: borderGrey, primaryBlue: primaryBlue,
+                      Container(
+                        margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                        padding: const EdgeInsets.all(24.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20, offset: const Offset(0, 10))],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            
+                            _buildSectionTitle('Informasi Dokumen', Icons.info_outline, primaryBlue, textDark),
+                            const SizedBox(height: 20),
+
+                            _buildLabel('NOMOR SURAT', textGrey),
+                            _buildTextField(
+                              controller: controller.noSuratController,
+                              hint: 'Contoh: 001/SK/2026', 
+                              prefixIcon: Icons.tag_rounded,
+                              bgColor: bgColor, borderGrey: borderGrey, primaryBlue: primaryBlue,
+                            ),
+                            const SizedBox(height: 20),
+
+                            _buildLabel('TANGGAL SURAT', textGrey),
+                            InkWell(
+                              onTap: () => selectDate(context),
+                              borderRadius: BorderRadius.circular(14),
+                              child: IgnorePointer(
+                                child: _buildTextField(
+                                  controller: TextEditingController(),
+                                  hint: controller.selectedDate.value == null 
+                                      ? 'Pilih Tanggal' 
+                                      : '${controller.selectedDate.value!.day.toString().padLeft(2, '0')}/${controller.selectedDate.value!.month.toString().padLeft(2, '0')}/${controller.selectedDate.value!.year}',
+                                  prefixIcon: Icons.calendar_month_rounded,
+                                  suffixIcon: Icons.keyboard_arrow_down_rounded,
+                                  hintColor: controller.selectedDate.value == null ? null : textDark,
+                                  bgColor: bgColor, borderGrey: borderGrey, primaryBlue: primaryBlue,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            _buildLabel('JUDUL DOKUMEN', textGrey),
+                            _buildTextField(
+                              controller: controller.judulController,
+                              hint: 'Contoh: SK Pembagian Tugas',
+                              prefixIcon: Icons.description_outlined,
+                              bgColor: bgColor, borderGrey: borderGrey, primaryBlue: primaryBlue,
+                            ),
+                            const SizedBox(height: 32),
+
+                            _buildSectionTitle('Klasifikasi', Icons.category_outlined, primaryBlue, textDark),
+                            const SizedBox(height: 20),
+
+                            _buildLabel('KATEGORI ARSIP', textGrey),
+                            _buildDropdown(
+                              value: controller.selectedKategoriId.value,
+                              items: controller.kategoriList.map((kategori) {
+                                return DropdownMenuItem<String>(
+                                  value: kategori.id,
+                                  child: Text(kategori.getStringValue('nama'), style: TextStyle(color: textDark, fontSize: 14)),
+                                );
+                              }).toList(),
+                              hint: 'Pilih Kategori',
+                              prefixIcon: Icons.folder_outlined,
+                              bgColor: bgColor, borderGrey: borderGrey, primaryBlue: primaryBlue, textDark: textDark,
+                              onChanged: (val) => controller.selectedKategoriId.value = val,
+                            ),
+                            const SizedBox(height: 20),
+
+                            _buildLabel('BIDANG / BAGIAN', textGrey),
+                            _buildDropdown(
+                              value: controller.selectedBidang.value,
+                              items: controller.userRole == 'Staff'
+                                  ? [
+                                      DropdownMenuItem<String>(
+                                        value: controller.selectedBidang.value, 
+                                        child: Text(controller.selectedBidang.value ?? '', style: TextStyle(color: Colors.grey.shade600, fontSize: 14))
+                                      )
+                                    ]
+                                  : controller.bidangList.map((String item) {
+                                      return DropdownMenuItem<String>(value: item, child: Text(item, style: TextStyle(color: textDark, fontSize: 14)));
+                                    }).toList(),
+                              hint: 'Pilih Bidang',
+                              prefixIcon: Icons.corporate_fare_rounded,
+                              bgColor: controller.userRole == 'Staff' ? Colors.grey.shade200 : bgColor, 
+                              borderGrey: borderGrey, primaryBlue: primaryBlue, textDark: textDark,
+                              onChanged: controller.userRole == 'Staff' ? null : (val) => controller.selectedBidang.value = val,
+                            ),
+                            
+                            const SizedBox(height: 32),
+
+                            _buildSectionTitle('Lampiran', Icons.attachment_rounded, primaryBlue, textDark),
+                            const SizedBox(height: 16),
+                            
+                            _buildFileDropzone(controller, primaryBlue, textGrey, textDark),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 32),
-
-                      _buildSectionTitle('Klasifikasi', Icons.category_outlined, primaryBlue, textDark),
-                      const SizedBox(height: 20),
-
-                      _buildLabel('KATEGORI ARSIP', textGrey),
-                      _buildDropdown(
-                        value: controller.selectedKategoriId.value,
-                        items: controller.kategoriList.map((kategori) {
-                          return DropdownMenuItem<String>(
-                            value: kategori.id,
-                            child: Text(kategori.getStringValue('nama'), style: TextStyle(color: textDark, fontSize: 14)),
-                          );
-                        }).toList(),
-                        hint: 'Pilih Kategori',
-                        prefixIcon: Icons.folder_outlined,
-                        bgColor: bgColor, borderGrey: borderGrey, primaryBlue: primaryBlue, textDark: textDark,
-                        onChanged: (val) => controller.selectedKategoriId.value = val,
-                      ),
-                      const SizedBox(height: 20),
-
-                      _buildLabel('BIDANG / BAGIAN', textGrey),
-                      _buildDropdown(
-                        value: controller.selectedBidang.value,
-                        items: controller.bidangList.map((String item) {
-                          return DropdownMenuItem<String>(value: item, child: Text(item, style: TextStyle(color: textDark, fontSize: 14)));
-                        }).toList(),
-                        hint: 'Pilih Bidang',
-                        prefixIcon: Icons.corporate_fare_rounded,
-                        bgColor: bgColor, borderGrey: borderGrey, primaryBlue: primaryBlue, textDark: textDark,
-                        onChanged: (val) => controller.selectedBidang.value = val,
-                      ),
-                      const SizedBox(height: 32),
-
-                      _buildSectionTitle('Lampiran', Icons.attachment_rounded, primaryBlue, textDark),
-                      const SizedBox(height: 16),
-                      
-                      _buildFileDropzone(controller, primaryBlue, textGrey, textDark),
                     ],
                   ),
                 ),
@@ -463,7 +482,7 @@ class UnggahArsipScreen extends StatelessWidget {
     required Color borderGrey,
     required Color primaryBlue,
     required Color textDark,
-    required Function(String?) onChanged
+    required Function(String?)? onChanged
   }) {
     return DropdownButtonFormField<String>(
       value: value,
@@ -475,6 +494,7 @@ class UnggahArsipScreen extends StatelessWidget {
         fillColor: bgColor.withValues(alpha: 0.5),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: borderGrey)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: primaryBlue, width: 1.5)),
+        disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: Colors.grey.shade300)),
       ),
       hint: Text(hint, style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
       items: items,
