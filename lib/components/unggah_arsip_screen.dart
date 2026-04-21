@@ -9,7 +9,10 @@ import '../archive_screen.dart';
 
 class UnggahArsipController extends GetxController {
   final RecordModel? existingDoc;
-  UnggahArsipController({this.existingDoc});
+  final String? initialFilePath;
+  final String? initialFileName;
+  
+  UnggahArsipController({this.existingDoc, this.initialFilePath, this.initialFileName});
 
   var isLoading = false.obs;
   var isUploading = false.obs;
@@ -44,6 +47,11 @@ class UnggahArsipController extends GetxController {
     userBidang = record?.getStringValue('bidang') ?? '';
 
     _loadInitialData();
+
+    if (initialFilePath != null && initialFileName != null) {
+      filePath.value = initialFilePath!;
+      fileName.value = initialFileName!;
+    }
   }
 
   Future<void> _loadInitialData() async {
@@ -182,12 +190,18 @@ class UnggahArsipController extends GetxController {
 
 class UnggahArsipScreen extends StatelessWidget {
   final RecordModel? existingDoc;
+  final String? initialFilePath;
+  final String? initialFileName;
 
-  const UnggahArsipScreen({super.key, this.existingDoc});
+  const UnggahArsipScreen({super.key, this.existingDoc, this.initialFilePath, this.initialFileName});
 
   @override
   Widget build(BuildContext context) {
-    final UnggahArsipController controller = Get.put(UnggahArsipController(existingDoc: existingDoc));
+    final UnggahArsipController controller = Get.put(UnggahArsipController(
+      existingDoc: existingDoc,
+      initialFilePath: initialFilePath,
+      initialFileName: initialFileName
+    ));
 
     final Color primaryBlue = const Color(0xFF2563EB);
     final Color darkBlue = const Color(0xFF1E3A8A);

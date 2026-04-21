@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-// --------------------------------------------------
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'main_screen.dart';
@@ -11,7 +10,7 @@ class LoginController extends GetxController {
 
   late TextEditingController emailController;
   late TextEditingController passwordController;
-
+// note form login devlop
   @override
   void onInit() {
     super.onInit();
@@ -316,7 +315,62 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   Align(
                                     alignment: Alignment.centerRight,
                                     child: TextButton(
-                                      onPressed: () {},
+                                      onPressed: () {
+                                        Get.dialog(
+                                          Dialog(
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(24.0),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets.all(16),
+                                                    decoration: BoxDecoration(color: Colors.orange.shade50, shape: BoxShape.circle),
+                                                    child: Icon(Icons.shield_rounded, color: Colors.orange.shade500, size: 40),
+                                                  ),
+                                                  const SizedBox(height: 20),
+                                                  const Text(
+                                                    'Lupa Password?',
+                                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                                                  ),
+                                                  const SizedBox(height: 12),
+                                                  RichText(
+                                                    textAlign: TextAlign.center,
+                                                    text: const TextSpan(
+                                                      style: TextStyle(fontSize: 13, color: Color(0xFF64748B), height: 1.5),
+                                                      children: [
+                                                        TextSpan(text: 'Sistem keamanan kami mencegah reset password secara mandiri. Silakan hubungi '),
+                                                        TextSpan(
+                                                          text: 'Petugas Arsip (Arsiparis)', 
+                                                          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B))
+                                                        ),
+                                                        TextSpan(text: ' atau Administrator untuk mereset akun Anda.'),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 24),
+                                                  SizedBox(
+                                                    width: double.infinity,
+                                                    child: ElevatedButton(
+                                                      onPressed: () => Get.back(),
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: const Color(0xFFF1F5F9),
+                                                        foregroundColor: const Color(0xFF1E293B),
+                                                        elevation: 0,
+                                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                      ),
+                                                      child: const Text('Saya Mengerti', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          barrierDismissible: true,
+                                        );
+                                      },
                                       style: TextButton.styleFrom(
                                         padding: EdgeInsets.zero,
                                         minimumSize: const Size(50, 30),
