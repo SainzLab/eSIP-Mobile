@@ -74,4 +74,3 @@ docker-compose up -d
 ## 👥 Kredit & Dukungan
 Dikembangkan sebagai bagian dari **Capstone Project Universitas Subang (Unsub)**. 
 *Support By: Mahasiswa Ilmu Komputer Unsub untuk SMP Negeri 1 Pabuaran.*
-```
