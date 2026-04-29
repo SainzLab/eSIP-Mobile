@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'models/pocketbase_service.dart';
+import '../models/pocketbase_service.dart';
 
 class DisposisiController extends GetxController {
   var isLoading = true.obs;
@@ -28,7 +28,9 @@ class DisposisiController extends GetxController {
     super.onInit();
     final pb = PocketBaseService.pb;
     userRole = pb.authStore.record?.getStringValue('role') ?? 'Staff';
-    userBidang = pb.authStore.record?.getStringValue('bidang') ?? 'Umum';
+    
+    String rawBidang = pb.authStore.record?.getStringValue('bidang') ?? 'Umum';
+    userBidang = rawBidang.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '').trim();
 
     debounce(searchQuery, (_) => refreshDisposisi(), time: const Duration(milliseconds: 500));
     fetchDisposisi();
@@ -54,7 +56,7 @@ class DisposisiController extends GetxController {
       if (userRole == 'Petugas Arsip' || userRole == 'Arsiparis' || userRole == 'Kepala Sekolah') {
         filterQuery = ''; 
       } else {
-        filterQuery = 'tujuan_bidang = "$userBidang" && status != "Menunggu Instruksi"';
+        filterQuery = 'tujuan_bidang ~ "$userBidang" && status != "Menunggu Instruksi"';
       }
 
       final records = await PocketBaseService.pb.collection('disposisi').getList(
@@ -153,9 +155,7 @@ class DisposisiController extends GetxController {
    
     Get.dialog(
       Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         elevation: 0,
         backgroundColor: Colors.transparent,
         child: Container(
@@ -164,53 +164,21 @@ class DisposisiController extends GetxController {
             color: Colors.white,
             shape: BoxShape.rectangle,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: iconBgColor, 
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  iconData,
-                  color: mainColor,
-                  size: 40,
-                ),
+                decoration: BoxDecoration(color: iconBgColor, shape: BoxShape.circle),
+                child: Icon(iconData, color: mainColor, size: 40),
               ),
               const SizedBox(height: 24),
-              
-              Text(
-                titleText,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
-                ),
-                textAlign: TextAlign.center,
-              ),
+              Text(titleText, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)), textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              
-              Text(
-                descText,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF64748B),
-                  height: 1.5,
-                ),
-              ),
+              Text(descText, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B), height: 1.5)),
               const SizedBox(height: 32),
-              
               Row(
                 children: [
                   Expanded(
@@ -219,21 +187,12 @@ class DisposisiController extends GetxController {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         side: BorderSide(color: Colors.grey.shade300),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text(
-                        'Batal',
-                        style: TextStyle(
-                          color: Color(0xFF64748B),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
                     ),
                   ),
                   const SizedBox(width: 16),
-                  
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () async {
@@ -242,35 +201,14 @@ class DisposisiController extends GetxController {
                         try {
                           if (isDelete) {
                             await PocketBaseService.pb.collection('disposisi').delete(item.id);
-                            Get.snackbar(
-                              'Berhasil', 
-                              'Lembar disposisi berhasil dicabut.', 
-                              snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: const Color(0xFF1E293B),
-                              colorText: Colors.white,
-                              margin: const EdgeInsets.all(16)
-                            );
+                            Get.snackbar('Berhasil', 'Lembar disposisi berhasil dicabut.', snackPosition: SnackPosition.BOTTOM, backgroundColor: const Color(0xFF1E293B), colorText: Colors.white, margin: const EdgeInsets.all(16));
                           } else {
                             await PocketBaseService.pb.collection('disposisi').update(item.id, body: {'status': 'Selesai'});
-                            Get.snackbar(
-                              'Berhasil', 
-                              'Status disposisi ditandai Selesai!', 
-                              snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: const Color(0xFF10B981),
-                              colorText: Colors.white,
-                              margin: const EdgeInsets.all(16)
-                            );
+                            Get.snackbar('Berhasil', 'Status disposisi ditandai Selesai!', snackPosition: SnackPosition.BOTTOM, backgroundColor: const Color(0xFF10B981), colorText: Colors.white, margin: const EdgeInsets.all(16));
                           }
                           refreshDisposisi();
                         } catch (e) {
-                          Get.snackbar(
-                            'Error', 
-                            'Gagal memproses aksi.', 
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: const Color(0xFFEF4444),
-                            colorText: Colors.white,
-                            margin: const EdgeInsets.all(16)
-                          );
+                          Get.snackbar('Error', 'Gagal memproses aksi.', snackPosition: SnackPosition.BOTTOM, backgroundColor: const Color(0xFFEF4444), colorText: Colors.white, margin: const EdgeInsets.all(16));
                         } finally {
                           isLoading.value = false;
                         }
@@ -280,17 +218,9 @@ class DisposisiController extends GetxController {
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: Text(
-                        confirmText,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
+                      child: Text(confirmText, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                     ),
                   ),
                 ],
@@ -304,12 +234,25 @@ class DisposisiController extends GetxController {
 
   Future<void> openFormModal(String mode, {RecordModel? existingData}) async {
     String arsipId = existingData?.getStringValue('arsip_id') ?? '';
-    String tujuanBidang = existingData?.getStringValue('tujuan_bidang') ?? (userRole == 'Kepala Sekolah' ? '' : 'Pimpinan');
+    if (arsipId.isEmpty && existingData != null) {
+      arsipId = existingData.data['arsip_id']?.toString() ?? '';
+      if (arsipId.isEmpty) {
+        try { arsipId = existingData.expand['arsip_id']?.first.id ?? ''; } catch (_) {}
+      }
+    }
+
     String instruksi = existingData?.getStringValue('instruksi') ?? '';
     String sifat = existingData?.getStringValue('sifat').isNotEmpty == true ? existingData!.getStringValue('sifat') : 'Biasa';
-    
     String rawBatasWaktu = existingData?.getStringValue('batas_waktu') ?? '';
     String batasWaktu = rawBatasWaktu.isNotEmpty ? rawBatasWaktu : DateTime.now().toIso8601String();
+    
+    List<String> selectedBidangs = [];
+    String rawExistingBidang = existingData?.getStringValue('tujuan_bidang') ?? '';
+    String existingBidang = rawExistingBidang.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '').trim();
+    
+    if (existingBidang.isNotEmpty && existingBidang != 'Pimpinan') {
+      selectedBidangs.add(existingBidang);
+    }
     
     if (mode == 'create') {
       try {
@@ -320,12 +263,15 @@ class DisposisiController extends GetxController {
       } catch (e) {}
     }
 
-    final bidangList = ["Tata Usaha", "Kesiswaan", "Kepegawaian", "Keuangan", "Kurikulum", "Sarana dan prasarana", "Humas", "Dapodik"];
+    final bidangList = ["Tata Usaha", "Kesiswaan", "Kepegawaian", "Keuangan", "Kurikulum", "Sarana dan prasarana", "Humas", "Perpustakaan", "Dapodik"];
     final sifatList = ["Biasa", "Penting", "Segera", "Rahasia"];
 
     Get.bottomSheet(
       StatefulBuilder(
         builder: (context, setState) {
+          final Color primaryBlue = const Color(0xFF2563EB);
+          final Color textDark = const Color(0xFF1E293B);
+
           return Container(
             padding: const EdgeInsets.all(24),
             decoration: const BoxDecoration(
@@ -339,7 +285,7 @@ class DisposisiController extends GetxController {
                 children: [
                   Text(
                     mode == 'create' ? 'Mulai Disposisi Baru' : (mode == 'edit' ? 'Revisi Instruksi' : 'Instruksi Kepala Sekolah'),
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textDark),
                   ),
                   const SizedBox(height: 20),
 
@@ -355,21 +301,39 @@ class DisposisiController extends GetxController {
                       onChanged: (v) => setState(() => arsipId = v!),
                     ),
                     if (userRole != 'Kepala Sekolah')
-                      Padding(padding: const EdgeInsets.only(top: 8.0), child: Text('Surat akan otomatis diteruskan ke Pimpinan untuk menunggu instruksi.', style: TextStyle(fontSize: 11, color: Colors.amber.shade700))),
+                      Padding(padding: const EdgeInsets.only(top: 8.0), child: Text('Surat otomatis diteruskan ke Pimpinan untuk instruksi.', style: TextStyle(fontSize: 11, color: Colors.amber.shade700))),
                     const SizedBox(height: 16),
                   ],
 
                   if (mode == 'forward' || mode == 'edit' || (mode == 'create' && userRole == 'Kepala Sekolah')) ...[
-                    const Text('Teruskan Ke Bidang', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+                    const Text('Teruskan Ke Bidang (Bisa Pilih Lebih Dari Satu)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
                     const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: tujuanBidang.isEmpty || tujuanBidang == 'Pimpinan' ? null : tujuanBidang,
-                      decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
-                      hint: const Text('Pilih Bidang Tujuan'),
-                      items: bidangList.map((b) => DropdownMenuItem(value: b, child: Text(b))).toList(),
-                      onChanged: (v) => setState(() => tujuanBidang = v!),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: bidangList.map((bidang) {
+                        final isSelected = selectedBidangs.contains(bidang);
+                        return FilterChip(
+                          label: Text(bidang, style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? Colors.white : textDark)),
+                          selected: isSelected,
+                          selectedColor: primaryBlue,
+                          checkmarkColor: Colors.white,
+                          backgroundColor: Colors.grey.shade100,
+                          side: BorderSide(color: isSelected ? primaryBlue : Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          onSelected: (bool selected) {
+                            setState(() {
+                              if (selected) {
+                                selectedBidangs.add(bidang);
+                              } else {
+                                selectedBidangs.remove(bidang);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
                     const Text('Instruksi / Arahan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
                     const SizedBox(height: 8),
@@ -415,7 +379,7 @@ class DisposisiController extends GetxController {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                   decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade400), borderRadius: BorderRadius.circular(12)),
-                                  child: Text(batasWaktu.substring(0, 10), style: const TextStyle(fontSize: 14)),
+                                  child: Text(batasWaktu.length >= 10 ? batasWaktu.substring(0, 10) : batasWaktu, style: const TextStyle(fontSize: 14)),
                                 ),
                               ),
                             ],
@@ -430,7 +394,7 @@ class DisposisiController extends GetxController {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2563EB), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                      style: ElevatedButton.styleFrom(backgroundColor: primaryBlue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                       onPressed: () async {
                         if (arsipId.isEmpty && mode == 'create') {
                           Get.snackbar('Peringatan', 'Pilih surat terlebih dahulu', backgroundColor: Colors.orange, colorText: Colors.white);
@@ -439,8 +403,8 @@ class DisposisiController extends GetxController {
                         
                         bool isFullForm = mode == 'forward' || mode == 'edit' || (mode == 'create' && userRole == 'Kepala Sekolah');
                         if (isFullForm) {
-                          if (tujuanBidang.isEmpty || tujuanBidang == 'Pimpinan') {
-                            Get.snackbar('Peringatan', 'Pilih Bidang Tujuan!', backgroundColor: Colors.orange, colorText: Colors.white);
+                          if (selectedBidangs.isEmpty) {
+                            Get.snackbar('Peringatan', 'Pilih minimal satu Bidang Tujuan!', backgroundColor: Colors.orange, colorText: Colors.white);
                             return;
                           }
                           if (instruksi.trim().isEmpty) {
@@ -452,24 +416,57 @@ class DisposisiController extends GetxController {
                         isSaving.value = true;
                         try {
                           final pb = PocketBaseService.pb;
-                          final dateOnly = batasWaktu.substring(0, 10);
+                          final dateOnly = batasWaktu.length >= 10 ? batasWaktu.substring(0, 10) : DateTime.now().toIso8601String().substring(0, 10);
                           final bWaktuStr = '$dateOnly 12:00:00.000Z'; 
 
                           if (mode == 'create') {
                             if (userRole == 'Kepala Sekolah') {
-                              await pb.collection('disposisi').create(body: {'arsip_id': arsipId, 'tujuan_bidang': tujuanBidang, 'instruksi': instruksi.trim(), 'sifat': sifat, 'batas_waktu': bWaktuStr, 'status': 'Diproses'});
+                              for (String bidang in selectedBidangs) {
+                                await pb.collection('disposisi').create(body: {
+                                  'arsip_id': arsipId, 'tujuan_bidang': bidang, 'instruksi': instruksi.trim(), 
+                                  'sifat': sifat, 'batas_waktu': bWaktuStr, 'status': 'Diproses'
+                                });
+                              }
                             } else {
-                              await pb.collection('disposisi').create(body: {'arsip_id': arsipId, 'tujuan_bidang': 'Pimpinan', 'status': 'Menunggu Instruksi'});
+                              await pb.collection('disposisi').create(body: {
+                                'arsip_id': arsipId, 'tujuan_bidang': 'Pimpinan', 'status': 'Menunggu Instruksi'
+                              });
                             }
                           } else if (mode == 'forward' || mode == 'edit') {
-                            await pb.collection('disposisi').update(existingData!.id, body: {'tujuan_bidang': tujuanBidang, 'instruksi': instruksi.trim(), 'sifat': sifat, 'batas_waktu': bWaktuStr, 'status': existingData.getStringValue('status') == 'Menunggu Instruksi' ? 'Diproses' : existingData.getStringValue('status')});
+                            await pb.collection('disposisi').update(existingData!.id, body: {
+                              'tujuan_bidang': selectedBidangs.first, 'instruksi': instruksi.trim(), 
+                              'sifat': sifat, 'batas_waktu': bWaktuStr, 
+                              'status': existingData.getStringValue('status') == 'Menunggu Instruksi' ? 'Diproses' : existingData.getStringValue('status')
+                            });
+                            
+                            if (selectedBidangs.length > 1) {
+                              final remainingBidangs = selectedBidangs.sublist(1);
+                              for (String bidang in remainingBidangs) {
+                                await pb.collection('disposisi').create(body: {
+                                  'arsip_id': arsipId, 'tujuan_bidang': bidang, 'instruksi': instruksi.trim(), 
+                                  'sifat': sifat, 'batas_waktu': bWaktuStr, 'status': 'Diproses'
+                                });
+                              }
+                            }
                           }
                           
                           if (Get.isBottomSheetOpen == true) Get.back();
                           Get.snackbar('Sukses', 'Data disposisi berhasil disimpan!', backgroundColor: Colors.green, colorText: Colors.white);
                           refreshDisposisi(); 
+
                         } catch (e) {
-                          Get.snackbar('Error', 'Gagal menyimpan data.', backgroundColor: Colors.red, colorText: Colors.white);
+                          String errorMsg = 'Terjadi kesalahan saat memproses data.';
+                          if (e is ClientException) {
+                            final data = e.response['data'] as Map<String, dynamic>?;
+                            if (data != null && data.isNotEmpty) {
+                              final errorField = data.keys.first;
+                              final fieldMessage = data[errorField]['message'];
+                              errorMsg = 'Error ($errorField): $fieldMessage';
+                            } else {
+                              errorMsg = e.response['message']?.toString() ?? errorMsg;
+                            }
+                          }
+                          Get.snackbar('Gagal', errorMsg, backgroundColor: Colors.red.shade700, colorText: Colors.white, duration: const Duration(seconds: 4));
                         } finally {
                           isSaving.value = false;
                         }
