@@ -71,6 +71,17 @@ docker-compose up -d
 ```
 *(Pastikan melihat dokumentasi repositori backend/infrastruktur untuk konfigurasi Docker yang lebih rinci).*
 
+## 🧪 Akun Uji Coba (Beta Testing)
+
+Untuk keperluan pengujian sistem selama masa *beta test*, Anda dapat menggunakan kredensial akun berikut sesuai dengan *role* yang ingin diuji:
+
+| Role | Alamat Email | Password |
+| :--- | :--- | :--- |
+| **Kepala Sekolah** | `kepsek@dev.com` | `` |
+| **Arsiparis** | `arsiparis@dev.com` | `` |
+| **Staff** | `staff@dev.com` | `` |
+
+
 ## 👥 Kredit & Dukungan
 Dikembangkan sebagai bagian dari **Capstone Project Universitas Subang (Unsub)**. 
 *Support By: Mahasiswa Ilmu Komputer Unsub untuk SMP Negeri 1 Pabuaran.*
