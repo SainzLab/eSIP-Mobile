@@ -595,7 +595,7 @@ class DisposisiScreen extends StatelessWidget {
                         final item = dataList[index];
                         final noSurat = item.getStringValue('expand.arsip_id.no_surat').isNotEmpty ? item.getStringValue('expand.arsip_id.no_surat') : 'Tanpa Nomor';
                         final instruksi = item.getStringValue('instruksi');
-                        final bidang = item.getStringValue('tujuan_bidang');
+                        final rawBidang = item.getStringValue('tujuan_bidang');
                         final sifat = item.getStringValue('sifat');
                         final status = item.getStringValue('status');
                         
@@ -604,7 +604,7 @@ class DisposisiScreen extends StatelessWidget {
 
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: _buildDisposisiCard(controller, item, noSurat, instruksi, bidang, sifat, status, batasWaktuFormatted),
+                          child: _buildDisposisiCard(controller, item, noSurat, instruksi, rawBidang, sifat, status, batasWaktuFormatted),
                         );
                       },
                       childCount: dataList.length + 1,
@@ -653,10 +653,12 @@ class DisposisiScreen extends StatelessWidget {
 
   Widget _buildDisposisiCard(
     DisposisiController controller, RecordModel item, 
-    String noSurat, String instruksi, String bidang, 
+    String noSurat, String instruksi, String rawBidang, 
     String sifat, String status, String batasWaktu
   ) {
     
+    String bidang = rawBidang.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '').trim();
+
     Color sifatColor = Colors.grey;
     Color sifatBgColor = Colors.grey.shade100;
     if (sifat == 'Segera') { sifatColor = const Color(0xFF2563EB); sifatBgColor = const Color(0xFFDBEAFE); } 
