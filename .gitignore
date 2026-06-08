@@ -46,3 +46,6 @@ app.*.map.json
 
 /bckp.md
 /docs
+
+android/key.properties
+**/*.jks
