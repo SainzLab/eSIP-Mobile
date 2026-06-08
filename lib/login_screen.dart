@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pocketbase/pocketbase.dart'; 
 import 'main_screen.dart';
 import 'models/pocketbase_service.dart';
 
@@ -10,18 +10,12 @@ class LoginController extends GetxController {
 
   late TextEditingController emailController;
   late TextEditingController passwordController;
-// note form login devlop
+
   @override
   void onInit() {
     super.onInit();
-    
-    if (kDebugMode) {
-      emailController = TextEditingController(text: 'staff@dev.com');
-      passwordController = TextEditingController(text: 'admin123');
-    } else {
-      emailController = TextEditingController();
-      passwordController = TextEditingController();
-    }
+    emailController = TextEditingController();
+    passwordController = TextEditingController();
   }
   
   void togglePasswordVisibility() {
@@ -54,13 +48,32 @@ class LoginController extends GetxController {
       Get.offAll(() => const MainScreen());
 
     } catch (e) {
+      String errorMessage = 'Terjadi kesalahan sistem.';
+      
+      if (e is ClientException) {
+        final code = e.statusCode;
+        
+        if (code == 0) {
+          errorMessage = 'Koneksi terputus! Pastikan HP/Emulator terhubung ke internet.';
+        } else if (code == 400) {
+          errorMessage = 'Email atau password salah / tidak terdaftar.';
+        } else {
+          errorMessage = 'Server menolak (Error Code: $code).';
+        }
+        debugPrint('POCKETBASE ERROR: $code - ${e.response}');
+      } else {
+        errorMessage = e.toString();
+        debugPrint('SYSTEM ERROR: $e');
+      }
+
       Get.snackbar(
         'Gagal Masuk', 
-        'Email atau password salah. Silakan coba lagi.',
+        errorMessage,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.shade800,
         colorText: Colors.white,
         margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 5),
       );
     } finally {
       isLoading.value = false;

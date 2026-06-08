@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:http/http.dart' as http;
 import 'models/pocketbase_service.dart';
 import 'login_screen.dart'; 
 import 'components/scanner_screen.dart';
@@ -53,6 +55,312 @@ class MainController extends GetxController {
   }
 }
 
+class ChatMessage {
+  final String text;
+  final bool isBot;
+  ChatMessage({required this.text, required this.isBot});
+}
+
+class ChatbotSheet extends StatefulWidget {
+  const ChatbotSheet({super.key});
+
+  @override
+  State<ChatbotSheet> createState() => _ChatbotSheetState();
+}
+
+class _ChatbotSheetState extends State<ChatbotSheet> {
+  final List<ChatMessage> messages = [];
+  bool isTyping = false;
+  
+  final TextEditingController inputController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    messages.add(ChatMessage(text: 'Halo! Saya asisten cerdas eSIP. Ada yang bisa saya bantu terkait pengelolaan dokumen hari ini?', isBot: true));
+  }
+
+  @override
+  void dispose() {
+    inputController.dispose();
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> sendMessage() async {
+    final text = inputController.text.trim();
+    if (text.isEmpty) return;
+
+    setState(() {
+      messages.add(ChatMessage(text: text, isBot: false));
+      isTyping = true;
+    });
+    
+    inputController.clear();
+    _scrollToBottom();
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://pbcdn.sainzcloud.my.id/api/tanya-ai'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': PocketBaseService.pb.authStore.token, 
+        },
+        body: jsonEncode({
+          'prompt': text
+        }), 
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        String botReply = data['reply'] ?? 'Tidak ada balasan dari AI.';
+        if (mounted) {
+          setState(() {
+            messages.add(ChatMessage(text: botReply, isBot: true));
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            messages.add(ChatMessage(text: 'Maaf, Asisten sedang mengalami gangguan (Error ${response.statusCode}).', isBot: true));
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('AI ERROR: $e');
+      if (mounted) {
+        setState(() {
+          messages.add(ChatMessage(text: 'Maaf, Asisten sedang mengalami gangguan koneksi. Coba beberapa saat lagi :)', isBot: true));
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isTyping = false;
+        });
+        _scrollToBottom();
+      }
+    }
+  }
+
+  void clearChat() {
+    setState(() {
+      messages.clear();
+      messages.add(ChatMessage(text: 'Halo! Saya asisten cerdas eSIP. Ada yang bisa saya bantu terkait pengelolaan dokumen hari ini?', isBot: true));
+    });
+  }
+
+  void _scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (scrollController.hasClients) {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Widget buildChatBubble({required String text, required bool isBot}) {
+    return Align(
+      alignment: isBot ? Alignment.centerLeft : Alignment.centerRight,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 280), 
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isBot ? Colors.white : const Color(0xFF2563EB),
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(16),
+            topRight: const Radius.circular(16),
+            bottomLeft: Radius.circular(isBot ? 0 : 16),
+            bottomRight: Radius.circular(isBot ? 16 : 0),
+          ),
+          border: isBot ? Border.all(color: Colors.grey.shade300) : null,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            )
+          ]
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: isBot ? const Color(0xFF1E293B) : Colors.white,
+            fontSize: 14,
+            height: 1.5,
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.85, 
+        decoration: const BoxDecoration(
+          color: Color(0xFFF8F9FE), 
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A), 
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10)
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 36, height: 36,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF3B82F6), Color(0xFFA855F7)],
+                            begin: Alignment.topRight,
+                            end: Alignment.bottomLeft,
+                          ),
+                        ),
+                        child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('eSip Assistant', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+                          Row(
+                            children: [
+                              Container(width: 6, height: 6, decoration: const BoxDecoration(color: Color(0xFF34D399), shape: BoxShape.circle)),
+                              const SizedBox(width: 4),
+                              const Text('Online', style: TextStyle(fontSize: 11, color: Color(0xFF34D399))),
+                            ],
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.white70, size: 22),
+                        onPressed: clearChat,
+                        tooltip: 'Bersihkan Chat',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white70, size: 22),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.all(20),
+                physics: const BouncingScrollPhysics(),
+                itemCount: messages.length + (isTyping ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == messages.length && isTyping) {
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 8.0, bottom: 16.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 32, height: 32,
+                              decoration: BoxDecoration(color: Colors.grey.shade200, shape: BoxShape.circle),
+                              child: const Icon(Icons.more_horiz, color: Colors.grey, size: 16),
+                            ),
+                            const SizedBox(width: 12),
+                            Container(
+                              width: 60, height: 36,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade200,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(16), topRight: Radius.circular(16), bottomRight: Radius.circular(16)
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  
+                  final msg = messages[index];
+                  return buildChatBubble(text: msg.text, isBot: msg.isBot);
+                },
+              ),
+            ),
+
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: Colors.grey.shade200)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9), 
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: TextField(
+                        controller: inputController,
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (_) => sendMessage(),
+                        decoration: const InputDecoration(
+                          hintText: 'Tanyakan sesuatu...', 
+                          border: InputBorder.none,
+                          hintStyle: TextStyle(fontSize: 14, color: Colors.grey)
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Material(
+                    color: isTyping ? Colors.grey.shade300 : const Color(0xFF2563EB),
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: isTyping ? null : sendMessage,
+                      child: const SizedBox(
+                        width: 44, height: 44,
+                        child: Icon(Icons.send_rounded, color: Colors.white, size: 18),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
 
@@ -79,8 +387,7 @@ class MainScreen extends StatelessWidget {
           radius: radius,
           backgroundColor: Colors.blue.shade50,
           backgroundImage: NetworkImage(controller.avatarUrl),
-          onBackgroundImageError: (exception, stackTrace) {
-          },
+          onBackgroundImageError: (exception, stackTrace) {},
         );
       } else {
         return CircleAvatar(
@@ -216,128 +523,12 @@ class MainScreen extends StatelessWidget {
       );
     }
 
-    Widget buildChatBubble({required String text, required bool isBot}) {
-      return Align(
-        alignment: isBot ? Alignment.centerLeft : Alignment.centerRight,
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 250), 
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: isBot ? const Color(0xFFF8F9FE) : const Color(0xFF2563EB),
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(16),
-              topRight: const Radius.circular(16),
-              bottomLeft: Radius.circular(isBot ? 0 : 16),
-              bottomRight: Radius.circular(isBot ? 16 : 0),
-            ),
-            border: isBot ? Border.all(color: Colors.grey.shade200) : null,
-          ),
-          child: Text(
-            text,
-            style: TextStyle(
-              color: isBot ? const Color(0xFF1E293B) : Colors.white,
-              fontSize: 14,
-              height: 1.4,
-            ),
-          ),
-        ),
-      );
-    }
-
     void showChatbot(BuildContext context) {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (context) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.85, 
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    decoration: BoxDecoration(
-                      border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: const Color(0xFF2563EB).withValues(alpha: 0.1),
-                              child: const Icon(Icons.smart_toy_outlined, color: Color(0xFF2563EB)),
-                            ),
-                            const SizedBox(width: 12),
-                            const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('AI Assistant', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B))),
-                              ],
-                            )
-                          ],
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.grey),
-                          onPressed: () => Navigator.pop(context),
-                        )
-                      ],
-                    ),
-                  ),
-
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.all(20),
-                      physics: const BouncingScrollPhysics(),
-                      children: [
-                        buildChatBubble(text: 'Halo! Saya asisten AI eSIP. Ada dokumen atau informasi arsip yang sedang Anda cari?', isBot: true),
-                        const SizedBox(height: 16),
-                        buildChatBubble(text: 'Tolong carikan surat keputusan terbaru dari kepala sekolah.', isBot: false),
-                        const SizedBox(height: 16),
-                        buildChatBubble(text: 'Baik, saya menemukan 3 Surat Keputusan terbaru dari bulan ini. Apakah Anda ingin melihat daftarnya atau langsung mengunduh yang paling baru?', isBot: true),
-                      ],
-                    ),
-                  ),
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border(top: BorderSide(color: Colors.grey.shade200)),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF4F5FA),
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            child: const TextField(
-                              decoration: InputDecoration(hintText: 'Tanya sesuatu...', border: InputBorder.none),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        CircleAvatar(
-                          backgroundColor: const Color(0xFF2563EB),
-                          child: IconButton(icon: const Icon(Icons.send, color: Colors.white, size: 18), onPressed: () {}),
-                        )
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
-          );
-        },
+        builder: (context) => const ChatbotSheet(),
       );
     }
 
